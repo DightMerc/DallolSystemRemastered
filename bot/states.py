@@ -2,8 +2,16 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 
 class User(StatesGroup):
-    started = State()
-    languageSet = State()
+    started = State() 
+    languageSet = State() 
+    photo = State()
+    priceSet = State()
+    add_info = State()
+    contact = State()
+    edit = State()
+    setNumber = State()
+    help = State()
+
 
 class Search(StatesGroup):
     started = State() 
@@ -12,8 +20,8 @@ class Search(StatesGroup):
     main_region = State()
     room_count = State()
     area = State()
-
     set = State()
+
 
 class Edit(StatesGroup):
     started = State()
@@ -21,6 +29,7 @@ class Edit(StatesGroup):
     property = State()
     photo = State()
     photoNew = State()
+
 
 class Sale(StatesGroup):
     started = State()
@@ -50,3 +59,32 @@ class Online(StatesGroup):
     started = State()
     mode = State()
     order = State()
+
+
+class Area(StatesGroup):
+    started = State()
+    square = State()
+    area = State()
+    state = State()
+    
+
+class Flat(StatesGroup):
+    started = State()
+    square = State()
+    area = State()
+    state = State()
+    floor = State()
+    main_floor = State()
+
+
+class Land(StatesGroup):
+    started = State()
+    square = State()
+    area = State()
+    state = State()
+
+
+class Free_area(StatesGroup):
+    started = State()
+    square = State()
+    area = State()

@@ -318,6 +318,12 @@ async def sale_location_added_handler(message: types.Message, state: FSMContext)
     user = message.from_user.id
     recieved_text = message.text
 
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
     await states.Sale.location_True_or_False.set()
 
     async with state.proxy() as data:
@@ -346,10 +352,937 @@ async def sale_location_added_handler(message: types.Message, state: FSMContext)
         text = Messages(user, lan)["flat_rooms_added"]
         markup = keyboards.BackNextKeyboard(user, lan)
 
-
     await bot.send_message(user, text, reply_markup=markup)
 
-#sale devision
+
+#Property Devision
+#Area
+@dp.message_handler(state=states.Area.started)
+async def sale_area_room_count_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+    
+    if _type!="search":
+    
+        if recieved_text.isdigit():
+            try:
+                async with state.proxy() as data:
+                    _type = data["online"]
+
+                await states.Area.state.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} room_count".format(_type)] = recieved_text
+
+                # text = Messages(user)["area_rooms_added"]
+                text = Messages(user, lan)["prop_state"]
+                # "Состояние ремонта недвижимости (например: Евро ремонт)"
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+
+            except Exception as e:
+
+                await states.Area.square.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} room_count".format(_type)] = recieved_text
+
+                text = Messages(user, lan)["area_rooms_added"]
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        async with state.proxy() as data:
+            _type = data["online"]
+
+        await states.Area.state.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} room_count".format(_type)] = recieved_text
+
+        # text = Messages(user)["area_rooms_added"]
+        text = Messages(user, lan)["prop_state"]
+        # "Состояние ремонта недвижимости (например: Евро ремонт)"
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Area.square)
+async def sale_area_square_handler(message: types.Message, state: FSMContext):
+
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",", "")
+    data = data.replace(".", "")
+
+    if _type != "search":
+
+        if data.isdigit():
+            recieved_text = recieved_text.replace(",", ".")
+
+            await states.Area.area.set()
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} square".format(_type)] = recieved_text
+
+            text = Messages(user, lan)["area_square_added"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        recieved_text = recieved_text.replace(",", ".")
+
+        await states.Area.area.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} square".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["area_square_added"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Area.area)
+async def sale_area_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",","")
+    data = data.replace(".","")
+
+    if _type != "search":
+
+        if data.isdigit():
+            recieved_text = recieved_text.replace(",",".")
+
+            await states.User.photo.set()
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} area".format(_type)] = recieved_text
+
+            # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+            text = Messages(user, lan)["photo1"]
+            await bot.send_message(user, text, reply_markup=None)
+
+            text = Messages(user, lan)["photo2"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        recieved_text = recieved_text.replace(",",".")
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} area".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+#Flat
+@dp.message_handler(state=states.Flat.started)
+async def sale_flat_room_count_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+    
+    if _type != "search":
+        if recieved_text.isdigit():
+            try:
+                async with state.proxy() as data:
+                    _type = data["online"]
+
+                await states.Flat.state.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} room_count".format(_type)] = recieved_text
+
+                # text = Messages(user)["area_rooms_added"]
+                text = Messages(user, lan)["prop_state"]
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+
+            except Exception as e:
+
+                await states.Flat.square.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} room_count".format(_type)] = recieved_text
+
+                text = Messages(user, lan)["flat_rooms_added"]
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        async with state.proxy() as data:
+            _type = data["online"]
+
+        await states.Flat.state.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} room_count".format(_type)] = recieved_text
+
+        # text = Messages(user)["area_rooms_added"]
+        text = Messages(user, lan)["prop_state"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Flat.state)
+async def sale_flat_state_handler(message: types.Message, state: FSMContext):
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    async with state.proxy() as data:
+        _type = data["type"]
+        data["{} prop_state".format(_type)] = recieved_text
+        
+    await states.Flat.square.set()
+
+    # text = Messages(user)["area_square_added"]
+    text = Messages(user, lan)["flat_rooms_added"]
+    markup = keyboards.BackKeyboard(user, lan)
+    await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Flat.square)
+async def sale_flat_square_handler(message: types.Message, state: FSMContext):
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    user = message.from_user.id
+    recieved_text = message.text
+
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",", "")
+    data = data.replace(".", "")
+
+    if _type != "search":
+        if data.isdigit():
+            recieved_text = recieved_text.replace(",", ".")
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} square".format(_type)] = recieved_text
+
+            await states.Flat.main_floor.set()
+
+            text = Messages(user, lan)["main_floor"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=None)
+
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        recieved_text = recieved_text.replace(",", ".")
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} square".format(_type)] = recieved_text
+
+        await states.Flat.main_floor.set()
+
+        text = Messages(user, lan)["main_floor"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=None)
+
+
+@dp.message_handler(state=states.Flat.main_floor)
+async def sale_flat_main_floor_handler(message: types.Message, state: FSMContext):
+    
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    user = message.from_user.id
+    recieved_text = message.text
+    async with state.proxy() as data:
+        _type = data["type"]
+    
+    if _type!="search":
+        if recieved_text.isdigit():
+
+            await states.Flat.floor.set()
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} main_floor".format(_type)] = recieved_text
+
+            text = Messages(user, lan)["floor"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=None)
+            
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        await states.Flat.floor.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} main_floor".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["floor"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=None)
+
+@dp.message_handler(state=states.Flat.floor)
+async def sale_flat_floor_handler(message: types.Message, state: FSMContext):
+    
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    user = message.from_user.id
+    recieved_text = message.text
+    async with state.proxy() as data:
+        _type = data["type"]
+    
+    if _type!="search":
+        if recieved_text.isdigit():
+
+            await states.User.photo.set()
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} floor".format(_type)] = recieved_text
+
+            # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+            text = Messages(user, lan)["photo1"]
+            await bot.send_message(user, text, reply_markup=None)
+
+            text = Messages(user, lan)["photo2"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+            
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} floor".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+#Land
+@dp.message_handler(state=states.Land.square)
+async def sale_land_area_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",", "")
+    data = data.replace(".", "")
+    
+    if _type!="search":
+        if data.isdigit():
+            try:
+                async with state.proxy() as data:
+                    _type = data["online"]
+
+                await states.Land.state.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} area".format(_type)] = recieved_text
+
+                # text = Messages(user)["area_rooms_added"]
+                text = Messages(user, lan)["prop_state"]
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+            except Exception as e:
+                recieved_text = recieved_text.replace(",",".")
+
+                await states.User.photo.set()
+
+                async with state.proxy() as data:
+                    _type = data["type"]
+                    data["{} area".format(_type)] = recieved_text
+
+                # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+                text = Messages(user, lan)["photo1"]
+                await bot.send_message(user, text, reply_markup=None)
+
+                text = Messages(user, lan)["photo2"]
+                markup = keyboards.BackKeyboard(user, lan)
+                await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        async with state.proxy() as data:
+            _type = data["online"]
+
+        await states.Land.state.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} area".format(_type)] = recieved_text
+
+        # text = Messages(user)["area_rooms_added"]
+        text = Messages(user, lan)["prop_state"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Land.state)
+async def sale_land_state_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+        data["{} prop_state".format(_type)] = recieved_text
+        
+    if _type!="search":
+
+        await states.User.photo.set()
+        # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+        text = Messages(user, lan)["photo1"]
+        await bot.send_message(user, text, reply_markup=None)
+
+        text = Messages(user, lan)["photo2"]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+    
+    else:
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+        
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+#Free Area
+@dp.message_handler(state=states.Free_area.area)
+async def sale_free_area_square_handler(message: types.Message, state: FSMContext):
+
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",","")
+    data = data.replace(".","")
+    
+    if _type!="search":
+
+        if data.isdigit():
+
+            await states.Free_area.square.set()
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} square".format(_type)] = recieved_text
+
+            text = Messages(user, lan)["free_area_square_added"]
+            markup = keyboards.BackNextKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        await states.Free_area.square.set()
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} square".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["free_area_square_added"]
+        markup = keyboards.BackNextKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Free_area.square)
+async def sale_free_area_area_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(",", "")
+    data = data.replace(".", "")
+    
+    if _type != "search":
+
+        if data.isdigit():
+            recieved_text = recieved_text.replace(",", ".")
+
+            await states.User.photo.set() 
+
+            async with state.proxy() as data:
+                _type = data["type"]
+                data["{} area".format(_type)] = recieved_text
+
+            # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+            text = Messages(user, lan)["photo1"]
+            await bot.send_message(user, text, reply_markup=None)
+
+            text = Messages(user, lan)["photo2"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        recieved_text = recieved_text.replace(",",".")
+
+        
+
+        async with state.proxy() as data:
+            _type = data["type"]
+            data["{} area".format(_type)] = recieved_text
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+#Photo recieve
+@dp.message_handler(state=states.User.photo, content_types=types.ContentType.PHOTO)
+async def sale_area_photo_added_handler(message: types.Message, state: FSMContext):
+
+    user = message.from_user.id
+
+    count = len(os.listdir(os.path.join(os.getcwd(), "Users", str(user))))
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    if count + 1 < 10:
+
+        photo = await bot.get_file(message.photo[-1].file_id)
+        await photo.download(os.path.join(os.getcwd(), "Users", str(user), "{}.jpg".format(message.photo[-1].file_id)))
+
+        count = len(os.listdir(os.path.join(os.getcwd(), "Users", str(user))))
+        text = Messages(user, lan)["photo3"].format(count)
+
+        markup = keyboards.BackNextKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+    else:
+        photo = await bot.get_file(message.photo[-1].file_id)
+        await photo.download(os.path.join(os.getcwd(), "Users", str(user), "{}.jpg".format(message.photo[-1].file_id)))
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.User.priceSet)
+async def user_ammount_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    async with state.proxy() as data:
+        _type = data["type"]
+
+    data = recieved_text.replace(".", "")
+    data = data.replace(",", "")
+    data = data.replace(" ", "")
+    data = data.replace("у", "")
+    data = data.replace("е", "")
+    data = data.replace("y", "")
+    data = data.replace("e", "")
+    data = data.replace("-", "")
+    
+    if _type != "search":
+
+        if data.isdigit():
+            await states.User.add_info.set()
+            async with state.proxy() as data1:
+                data1['ammount'] = data
+
+            text = Messages(user, lan)["ammount_set"]
+            markup = keyboards.BackNextKeyboard(user, lan)
+
+            await bot.send_message(user, text, reply_markup=markup)
+        else:
+            text = Messages(user, lan)["digits_only"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+    else:
+        await states.User.add_info.set()
+        async with state.proxy() as data1:
+            data1['ammount'] = recieved_text
+
+        text = Messages(user, lan)["ammount_set"]
+        markup = keyboards.BackNextKeyboard(user, lan)
+
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Area.state)
+async def sale_area_state_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    async with state.proxy() as data:
+        _type = data["type"]
+        data["{} prop_state".format(_type)] = recieved_text
+        
+    await states.Area.square.set()
+
+    text = Messages(user, lan)["area_rooms_added"]
+    markup = keyboards.BackKeyboard(user)
+    await bot.send_message(user, text, reply_markup=markup)
+
+#rent section
+@dp.message_handler(state=states.Rent.started)
+async def rent_handler(message: types.Message):
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    if recieved_text in ["Подать объявление", "Эълон бериш"]:
+        await states.Rent.announcement.set()
+
+        text = Messages(user, lan)['choose_action_rent_inner']
+        markup = keyboards.SaleSearchAndannouncementKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+    elif recieved_text in ["Поиск 🔍", "Қидирув 🔍"]:
+        await states.Rent.search.set()
+
+        await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "after_search.mp4")))
+        
+
+        text = Messages(user, lan)['choose_action_search']
+        markup = keyboards.SaleSearchAndannouncementKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.announcement)
+async def rent_type_choosen_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    if recieved_text in keyboards.SaleSearchAndannouncementKeyboardList:
+
+        MessageDict = {'🏠 Участок': Messages(user, lan)['area'], '🏬 Квартира': Messages(user, lan)['flat'], '🏡 Участок земли': Messages(user, lan)['land'], '🏗 Коммерческая недвижимость': Messages(user, lan)['free_area'],
+                        '🏠 Ховли': Messages(user, lan)['area'], '🏡 Ер': Messages(user, lan)['land'], '🏗 Тижорат кўчмас мулки': Messages(user, lan)['free_area'] }
+
+        await states.Rent.type_choosen.set()
+
+        if recieved_text in ['🏠 Участок', "🏠 Ховли"]:
+            prop = "Участок"
+        if recieved_text in ["🏬 Квартира"]:
+            prop = "Квартира"
+        if recieved_text in ["🏡 Участок земли", "🏡 Ер"]:
+            prop = "Участок земли"
+        if recieved_text in ["🏗 Коммерческая недвижимость", "🏗 Тижорат кўчмас мулки"]:
+            prop = "Коммерческая недвижимость"
+
+        
+
+        async with state.proxy() as data:
+            data['property'] = prop
+            
+        text = MessageDict[recieved_text]
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.type_choosen)
+async def rent_title_handler(message: types.Message, state: FSMContext):
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    await states.Rent.title_added.set()
+
+    async with state.proxy() as data:
+        data["rent title"] = recieved_text
+
+    text = Messages(user, lan)["title_added"]
+    markup = keyboards.MainRegionKeyboard(user, lan)
+    await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.title_added)
+async def sale_region_handler(message: types.Message, state: FSMContext):
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    await states.Rent.main_region_added.set()
+
+    async with state.proxy() as data:
+        data["rent main_region"] = recieved_text
+
+    text = Messages(user, lan)["title_added"]
+    markup = keyboards.RegionKeyboard(user, recieved_text, lan)
+    await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.main_region_added)
+async def sale_region_handler(message: types.Message, state: FSMContext):
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    await states.Rent.region_added.set()
+
+    async with state.proxy() as data:
+        data["rent region"] = recieved_text
+
+    text = Messages(user, lan)["region_added"]
+    markup = keyboards.BackKeyboard(user, lan)
+    await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.region_added)
+async def rent_reference_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    await states.Rent.reference.set()
+
+    async with state.proxy() as data:
+        data["rent reference"] = recieved_text
+
+    # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_geo.mp4")))
+
+    text = Messages(user, lan)["geo1"]
+    await bot.send_message(user, text)
+
+    text = Messages(user, lan)["geo2"]
+    await bot.send_message(user, text)
+
+    text = Messages(user, lan)["geo3"]
+    markup = keyboards.LocationKeyboard(user, lan)
+    await bot.send_message(user, text, reply_markup=markup)
+
+
+@dp.message_handler(state=states.Rent.reference, content_types=types.ContentType.LOCATION)
+async def rent_location_added_handler(message: types.Message, state: FSMContext):
+    
+    user = message.from_user.id
+    recieved_text = message.text
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    await states.Rent.location_True_or_False.set()
+
+    async with state.proxy() as data:
+        data["rent location"] = "{} {}".format(message.location.latitude, message.location.longitude)
+
+        _type = data['property']
+
+    if _type == "Участок":
+        await states.Area.started.set()
+        text = Messages(user, lan)["area_started"]
+        markup = keyboards.RoomCountKeyboard(user, lan)
+
+    if _type == "Квартира":
+        await states.Flat.started.set()
+        text = Messages(user, lan)["flat_started"]
+        markup = keyboards.RoomCountKeyboard(user, lan)
+
+    if _type == "Участок земли":
+        await states.Land.square.set()
+        text = Messages(user, lan)["land_started"]
+        markup = keyboards.BackKeyboard(user, lan)
+
+    if _type == "Коммерческая недвижимость":
+        await states.Free_area.area.set()
+
+        text = Messages(user, lan)["flat_rooms_added"]
+        markup = keyboards.BackNextKeyboard(user, lan)
+
+
+    await bot.send_message(user, text, reply_markup=markup)
 
 
 async def shutdown(dispatcher: Dispatcher):
@@ -358,8 +1291,8 @@ async def shutdown(dispatcher: Dispatcher):
 
 
 if __name__ == '__main__':
-    if not os.path.exists(os.getcwd()+"/Users/"):
-        os.mkdir(os.getcwd()+"/Users/", 0o777)
+    if not os.path.exists(os.path.join(os.getcwd(), "Users")):
+        os.mkdir(os.path.join(os.getcwd(), "Users"), 0o777)
         
     executor.start_polling(dp, on_shutdown=shutdown)
 

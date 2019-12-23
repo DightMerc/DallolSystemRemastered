@@ -34,11 +34,27 @@ def Messages(user, lan):
             "land_started": "Старт",
             "flat_rooms_added": "Старт",
 
+            "prop_state": "Второй шаг",
+            "area_rooms_added": "Комнаты добавлены",
+            "digits_only": "Не, чувак. Только цифры",
+            "area_square_added": "Добавил площадь",
 
+            "photo1": "Фото",
+            "photo2": "Фото",
+            "photo3": "Фото",
+
+            "price": "Цену го",
+
+            "ammount_set": "Поставил цену",
+
+            "prop_state": "Состояние недвижимости",
+            "flat_rooms_added": "Комнаты квартиры",
             
 
+            "main_floor": "Количество этажей в доме",
+            "floor": "Этаж добавил",
 
-
+            "free_area_square_added": "Площадь добавил",
         }
     else:
         return {
@@ -52,6 +68,9 @@ def Messages(user, lan):
             "choose_action_help": "Выберите пункт меню",
 
             "choose_action_sale_inner": "Выберите пункт меню",
+            "choose_action_rent_inner": "Выберите пункт меню",
+
+            
             "choose_action_search": "Выберите пункт меню",
 
             "area": "Введите описание",
@@ -70,6 +89,29 @@ def Messages(user, lan):
             "flat_started": "Старт",
             "land_started": "Старт",
             "flat_rooms_added": "Старт",
+
+            "prop_state": "Второй шаг",
+            "area_rooms_added": "Комнаты добавлены",
+            "digits_only": "Не, чувак. Только цифры",
+            "area_square_added": "Добавил площадь",
+
+            "photo1": "Фото",
+            "photo2": "Фото",
+            "photo3": "Фото",
+
+
+            "price": "Цену го",
+
+            "ammount_set": "Поставил цену",
+
+            "prop_state": "Состояние недвижимости",
+            "flat_rooms_added": "Комнаты квартиры",
+
+            "main_floor": "Количество этажей в доме",
+            "floor": "Этаж добавил",
+
+            "free_area_square_added": "Площадь добавил",
+
 
 
         }
