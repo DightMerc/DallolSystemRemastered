@@ -1,92 +1,103 @@
-import psycopg2
 import datetime
 
-print("Client connected")
-try:
-    connection = psycopg2.connect(user = "postgres",
-                                password = "secret",
-                                host = "185.159.129.94",
-                                port = "5432",
-                                database = "dallolcrm_db")
+import sqlalchemy
+import models
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.dialects import postgresql
+from sqlalchemy.sql import func
 
-except (Exception, psycopg2.Error) as error:
-    print("Error while connecting to PostgreSQL", error)
+
+def connect():
+    '''Returns a connection and a metadata object'''
+    # We connect with the help of the PostgreSQL URL
+    # postgresql://federer:grandestslam@localhost:5432/tennis
+    url = 'postgresql://{}:{}@{}:{}/{}'
+    url = url.format("postgres", "secret", "185.159.129.94", "5432", "dallolcrm_db")
+
+    # The return value of create_engine() is our connection object
+    engine = sqlalchemy.create_engine(url, client_encoding='utf8')
+
+    return engine
+
+    
+print("Client connecting...", end=" ")
+
+engine = connect()
+
+Session = sessionmaker(bind=engine)
+Session = sessionmaker()
+Session.configure(bind=engine)
+session = Session()
+
+print("Connected")
+
+def TEST():
+    q = session.query(models.STUDENT.fullname).order_by(models.STUDY.fak_id).order_by(models.STUDY.group).count()
+    print(f"\n\n{str(q.statement.compile(dialect=postgresql.dialect()))}\n\n")
 
 
 def CreateNewUser(user):
-    cursor = connection.cursor()
 
-    cursor.execute(
-        f"SELECT * FROM users WHERE chat_id={user}"
-        )
-
-    rows = cursor.fetchall()
-    if len(rows)!=0:
+    if session.query(models.User).filter(models.User.chat_id==int(user)).count()!=0:
         pass
     else:
-        cursor.execute(
-        "INSERT INTO users (chat_id, status, role, created_at) VALUES (%s, 'active', 'user', %s)", [user, datetime.datetime.now()]
-        )
-    connection.commit()
-    cursor.close()
+        try:
+            newUser = models.User()
+            newUser.chat_id =  int(user)
+            newUser.status = "active"
+            newUser.role = "user"
+
+            session.add(newUser)
+            session.commit()
+        except:
+            session.rollback()
+            raise
+        finally:
+            session.close()
 
 
 def GetMainRegions(lan):
-    cursor = connection.cursor()
-
-    cursor.execute(
-        f"SELECT * FROM regions WHERE parent_id IS NULL"
-        )
-
-    rows = cursor.fetchall()
+    rows = session.query(models.Region).filter(models.Region.parent_id == None).all()
 
     regions = []
     for row in rows:
-        cursor.execute(
-        f"SELECT * FROM region_translations WHERE region_id='{row[0]}' AND locale='{lan}'"
-        )
+
+        translation = session.query(models.RegionTranslation).filter(models.RegionTranslation.region_id==row.id, models.RegionTranslation.locale==lan).first()
+
         region = {
-            "id": row[0],
-            "name": cursor.fetchone()[3],
-            "parent_id": row[2],
+            "id": row.id,
+            "name": translation.name,
+            "parent_id": row.parent_id,
 
         }
         regions.append(region)
-    cursor.close()
 
     return regions
 
 
 def GetChildRegion(main, lan):
-    cursor = connection.cursor()
+    current = session.query(models.RegionTranslation).filter(models.RegionTranslation.name == main).first()
 
-    cursor.execute(
-        f"SELECT * FROM region_translations WHERE name='{main}'"
-        )
-    
-    cursor.execute(
-        f"SELECT * FROM regions WHERE parent_id={cursor.fetchone()[2]}"
-        )
-
-    rows = cursor.fetchall()
+    rows = session.query(models.Region).filter(models.Region.parent_id == current.region_id).all()
 
     regions = []
     for row in rows:
-        cursor.execute(
-        f"SELECT * FROM region_translations WHERE region_id='{row[0]}' AND locale='{lan}'"
-        )
-        region = {
-            "id": row[0],
-            "name": cursor.fetchone()[3],
-            "parent_id": row[2],
+        try:
+            translation = session.query(models.RegionTranslation).filter(models.RegionTranslation.region_id==row.id, models.RegionTranslation.locale==lan).first()
 
-        }
-        regions.append(region)
-    cursor.close()
+            region = {
+                "id": row.id,
+                "name": translation.name,
+                "parent_id": row.parent_id,
+
+            }
+            regions.append(region)
+        except Exception as e:
+            pass
     
     return regions
 
 
-# if __name__ == "__main__":
-#     GetMainRegions()
+if __name__ == "__main__":
+    TEST()
     

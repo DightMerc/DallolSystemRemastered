@@ -22,7 +22,7 @@ import states
 logging.basicConfig(format=u'%(filename)+13s [ LINE:%(lineno)-4s] %(levelname)-8s [%(asctime)s] %(message)s',
                      level=logging.DEBUG)
 
-bot = Bot(token="796303915:AAF4MJs2lqEYxUWtK-7VSjYVWGjeLhNEXnU", parse_mode=types.ParseMode.HTML)
+bot = Bot(token="1016195496:AAEUoyFq40hbT6rd9oNSK-JoTfv1FLg8d8w", parse_mode=types.ParseMode.HTML)
 # storage = RedisStorage2(db=8)
 storage = MemoryStorage()
 
@@ -1056,6 +1056,35 @@ async def user_ammount_handler(message: types.Message, state: FSMContext):
         await bot.send_message(user, text, reply_markup=markup)
 
 
+@dp.message_handler(state=states.User.add_info)
+async def user_info_handler(message: types.Message, state: FSMContext):
+    user = message.from_user.id
+    recieved_text = message.text
+
+    if not recieved_text in ["Дальше", "Ўтказиб юбориш"]:
+
+        await states.User.contact.set()
+        async with state.proxy() as data:
+            data['add_info'] = recieved_text
+
+        text = Messages(user, lan)["contacts"]
+        markup = keyboards.ContactKeyboard(user, lan)
+        # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_contact.mp4")))
+
+
+        await bot.send_message(user, text, reply_markup=markup)
+    else:
+        # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_contact.mp4")))
+
+        text = Messages(user, lan)["contacts"]
+        await states.User.contact.set()
+        async with state.proxy() as data:
+            data['add_info'] = "None"
+
+        markup = keyboards.ContactKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+
 @dp.message_handler(state=states.Area.state)
 async def sale_area_state_handler(message: types.Message, state: FSMContext):
     
@@ -1099,7 +1128,7 @@ async def rent_handler(message: types.Message):
     elif recieved_text in ["Поиск 🔍", "Қидирув 🔍"]:
         await states.Rent.search.set()
 
-        await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "after_search.mp4")))
+        # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "after_search.mp4")))
         
 
         text = Messages(user, lan)['choose_action_search']
@@ -1283,6 +1312,255 @@ async def rent_location_added_handler(message: types.Message, state: FSMContext)
 
 
     await bot.send_message(user, text, reply_markup=markup)
+
+
+#next button handler
+@dp.message_handler(text="Дальше", state="*")
+async def next_button_handler(message: types.Message, state: FSMContext):
+    user = message.from_user.id
+    my_state = await dp.current_state(user=message.from_user.id).get_state()
+
+    try:
+        async with state.proxy() as data:
+            lan = data['lan']
+    except Exception as e:
+        lan = "ru"
+
+    if my_state in "Rent:reference":
+        user = message.from_user.id
+        recieved_text = message.text
+
+        await states.Rent.location_True_or_False.set()
+
+        async with state.proxy() as data:
+            data["rent location"] = "0 0"
+
+            _type = data['property']
+
+        if _type == "Участок":
+            await states.Area.started.set()
+            text = Messages(user, lan)["area_started"]
+            markup = keyboards.RoomCountKeyboard(user, lan)
+
+        if _type == "Квартира":
+            await states.Flat.started.set()
+            text = Messages(user, lan)["flat_started"]
+            markup = keyboards.RoomCountKeyboard(user, lan)
+
+        if _type == "Участок земли":
+            await states.Land.square.set()
+            text = Messages(user, lan)["land_started"]
+            markup = keyboards.BackKeyboard(user, lan)
+
+        if _type == "Коммерческая недвижимость":
+
+            await states.Free_area.area.set()
+
+            text = Messages(user, lan)["flat_rooms_added"]
+            markup = keyboards.BackNextKeyboard(user, lan)
+
+
+        await bot.send_message(user, text, reply_markup=markup)
+    elif my_state in "Sale:reference":
+        user = message.from_user.id
+        recieved_text = message.text
+
+        await states.Sale.location_True_or_False.set()
+
+        async with state.proxy() as data:
+            data["sale location"] = "0 0"
+
+            _type = data['property']
+
+        if _type == "Участок":
+            await states.Area.started.set()
+            text = Messages(user, lan)["area_started"]
+
+            markup = keyboards.RoomCountKeyboard(user, lan)
+
+        if _type == "Квартира":
+            await states.Flat.started.set()
+            text = Messages(user, lan)["flat_started"]
+            markup = keyboards.RoomCountKeyboard(user, lan)
+
+        if _type == "Участок земли":
+            await states.Land.square.set()
+            text = Messages(user, lan)["land_started"]
+            markup = keyboards.BackKeyboard(user, lan)
+
+        if _type == "Коммерческая недвижимость":
+
+            await states.Free_area.area.set()
+
+            text = Messages(user, lan)["flat_rooms_added"]
+            markup = keyboards.BackNextKeyboard(user, lan)
+
+        await bot.send_message(user, text, reply_markup=markup)
+
+    elif my_state in "User:photo":
+
+        text = Messages(user, lan)["price"]
+        await states.User.priceSet.set()
+
+        markup = keyboards.BackKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+    
+    elif my_state in "Edit:photoNew":
+
+        async with state.proxy() as data:
+
+            _type = data['type']
+            
+            _property = data['property']
+            _title = data['{} title'.format(_type)]
+            _region = data['{} region'.format(_type)]
+            _reference = data['{} reference'.format(_type)]
+            try:
+                _location = data['{} location'.format(_type)]
+            except Exception as e:
+                _location = "0 0"
+            try:
+                _room_count = data['{} room_count'.format(_type)]
+            except Exception as e:
+                _room_count = 0
+
+            try:
+                _square = data['{} square'.format(_type)]
+            except Exception as e:
+                _square = 0
+
+            
+            
+            try:
+                _area = data['{} area'.format(_type)]
+            except Exception as e:
+                _area = 0
+            
+            try:
+                _state = data['{} state'.format(_type)]
+            except Exception as e:
+                _state = ""
+
+            try:
+                _main_floor = data['{} main_floor'.format(_type)]
+            except Exception as e:
+                _main_floor = 0
+
+            try:
+                _floor = data['{} floor'.format(_type)]
+            except Exception as e:
+                _floor = 0
+
+            _ammount = data['ammount']
+            _add_info = data['add_info']
+            _contact = data['phone']
+
+
+
+            user_data = []
+            user_data.append(_type)
+            user_data.append(_property)
+            user_data.append(_title)
+            user_data.append(_region)
+            user_data.append(_reference)
+            user_data.append(_location)
+            user_data.append(_room_count)
+            user_data.append(_square)
+            user_data.append(_area)
+            user_data.append(_state)
+            user_data.append(_ammount)
+            user_data.append(_add_info)
+            user_data.append(_contact)
+            user_data.append(_main_floor)
+            user_data.append(_floor)
+
+            try:
+                _type = data['type']
+                _online_status = data["online"]
+                user_data.append(data['master'])
+                try:
+                    user_data.append(data['{} prop_state'.format(_type)])
+                except Exception as e:
+                    user_data.append("")
+
+                text = OnlineGenerateEndText(user_data, user)
+            except Exception as e:
+                print("\n\n{}\n\n".format(e))
+
+                text = GenerateEndText(user_data, False, user)
+
+
+        await states.User.edit.set()
+
+        if _location != "0 0":
+            X = _location.split(" ")[0]
+            Y = _location.split(" ")[1]
+            await bot.send_chat_action(user, action="find_location")
+
+            await bot.send_location(user, latitude=X, longitude=Y)
+
+        photoes = os.listdir(os.getcwd()+"/Users/" + str(user)+"/")
+        markup = keyboards.EditApplyKeyboard(user, lan)
+
+        if len(photoes)!=0:
+
+            media = []
+            for photo in photoes:
+                media.append(InputMediaPhoto(str(photo).replace(".jpg", "")))
+            
+
+            if len(media)!=1:
+                await bot.send_chat_action(user, action="upload_photo")
+                await bot.send_media_group(user, media)
+            else:
+                await bot.send_chat_action(user, action="upload_photo")
+                await bot.send_photo(user, str(photoes[0]).replace(".jpg",""))
+        await bot.send_message(user, text, reply_markup=markup)
+
+        
+    
+    elif my_state in "User:add_info":
+
+        # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_contact.mp4")))
+
+
+        text = Messages(user, lan)["contacts"]
+        await states.User.contact.set()
+
+        markup = keyboards.ContactKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+    elif my_state in "Free_area:area":
+        await states.Free_area.square.set()
+
+        text = Messages(user, lan)["free_area_square_added"]
+        markup = keyboards.BackNextKeyboard(user, lan)
+        await bot.send_message(user, text, reply_markup=markup)
+
+    elif my_state in "Free_area:square":
+        async with state.proxy() as data:
+            _type = data['type']
+
+        if _type!="search":
+            # await bot.send_video(user, InputFile(os.path.join(os.getcwd(), "Instructions", "how_to_photo.mp4")))
+
+            await states.User.photo.set() 
+
+            text = Messages(user, lan)["photo1"]
+            await bot.send_message(user, text, reply_markup=None)
+
+            text = Messages(user, lan)["photo2"]
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
+        
+        else:
+
+            text = Messages(user, lan)["price"]
+            await states.User.priceSet.set()
+            
+
+            markup = keyboards.BackKeyboard(user, lan)
+            await bot.send_message(user, text, reply_markup=markup)
 
 
 async def shutdown(dispatcher: Dispatcher):

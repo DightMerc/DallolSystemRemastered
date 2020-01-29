@@ -55,6 +55,8 @@ def Messages(user, lan):
             "floor": "Этаж добавил",
 
             "free_area_square_added": "Площадь добавил",
+
+            "contacts": "Пришли"
         }
     else:
         return {
@@ -112,6 +114,7 @@ def Messages(user, lan):
 
             "free_area_square_added": "Площадь добавил",
 
+            "contacts": "Пришли"
 
 
         }

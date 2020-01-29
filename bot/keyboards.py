@@ -1054,13 +1054,13 @@ def LocationKeyboard(user, lan):
 
     
 
-# def ContactKeyboard(user):
-#         if client.getUserLanguage(user)=="RU":
-#                 return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Отправить свой контакт', request_contact=True)).add(
-#                     KeyboardButton('⏮ Назад'))
-#         else:
-#                 return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Телефон рақамингизни юбориш', request_contact=True)).add(
-#                     KeyboardButton('⏮ Ортга'))
+def ContactKeyboard(user, lan):
+        if lan=="ru":
+                return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Отправить свой контакт', request_contact=True)).add(
+                    KeyboardButton('⏮ Назад'))
+        else:
+                return ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True).add(KeyboardButton('Телефон рақамингизни юбориш', request_contact=True)).add(
+                    KeyboardButton('⏮ Ортга'))
     
 
 # def YesOrNoKeyboard(user):
